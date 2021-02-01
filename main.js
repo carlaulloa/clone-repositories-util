@@ -4,17 +4,31 @@ const path = require('path');
 const child_process = require('child_process');
 
 let source = "C:\\Users\\carla\\Downloads\\RepositoryLinks.xlsx";
-let localWorkspace = "C:\\Users\\carla\\principal-workspace";
-let sheetIndex = 0;
+let localWorkspace = "D:\\principal-workspace";
+let displayName = "Carla Contreras Ulloa";
+let email = "ccontrerasu@odybank.com.pe";
 
+let sheetIndex = 0;
 let workbook = XLSX.readFile(source);
 let sheetNames = workbook.SheetNames;
 let sheetName = sheetNames[sheetIndex];
 let sheet = workbook.Sheets[sheetName];
 var data = XLSX.utils.sheet_to_json(sheet);
 
-let setTooLongPath = () => {
+let setGlobalTooLongPath = () => {
   child_process.execSync('git config --global core.longpaths true', { stdio: 'inherit' });
+}
+
+let setUsername = (displayName) => {
+  return `git config user.name "${displayName}"`;
+}
+
+let setEmail = (email) => {
+  return `git config user.email "${email}"`;
+}
+
+let unsetOriginMirror = () => {
+  child_process.execSync('git config --unset remote.origin.mirror', { stdio: 'inherit' });
 }
 
 let getCloneCommand = (url, repoName) => {
@@ -30,6 +44,9 @@ let execClone = (url, repoName, dir) => {
       let full = path.join(dir, repoName);
       process.chdir(full);
       child_process.execSync(`git config --unset core.bare`, { stdio: 'inherit' });
+      child_process.execSync(setUsername(displayName), { stdio: 'inherit' });
+      child_process.execSync(setEmail(email), { stdio: 'inherit' });
+      unsetOriginMirror();
       console.log(`${repoName} unset completo`);
       resolve();
     } catch (error) {
@@ -38,12 +55,11 @@ let execClone = (url, repoName, dir) => {
   });
 }
 
-setTooLongPath();
+setGlobalTooLongPath();
 
 data.forEach(item => {
-  const urlColumn = 'Actualizar URL';
-  const partToReplace = "git remote set-url origin";
-  let url = item[urlColumn].replace(partToReplace, "").trim();
+  const urlColumn = 'Repositorio Gitlab empresarial';
+  let url = item[urlColumn].trim();
   let baseUrlToReplace = "http://gitlab.odybank.com.pe/";
   let dir = url.replace(baseUrlToReplace, "");
   let parts = dir.split('/');
