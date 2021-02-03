@@ -27,12 +27,8 @@ let setEmail = (email) => {
   return `git config user.email "${email}"`;
 }
 
-let unsetOriginMirror = () => {
-  child_process.execSync('git config --unset remote.origin.mirror', { stdio: 'inherit' });
-}
-
 let getCloneCommand = (url, repoName) => {
-  return `git clone --mirror ${url} ${repoName}/.git`;
+  return `git clone ${url} ${repoName}`;
 }
 
 let execClone = (url, repoName, dir) => {
@@ -43,11 +39,9 @@ let execClone = (url, repoName, dir) => {
       child_process.execSync(coomand, { stdio: 'inherit' });
       let full = path.join(dir, repoName);
       process.chdir(full);
-      child_process.execSync(`git config --unset core.bare`, { stdio: 'inherit' });
       child_process.execSync(setUsername(displayName), { stdio: 'inherit' });
       child_process.execSync(setEmail(email), { stdio: 'inherit' });
-      unsetOriginMirror();
-      console.log(`${repoName} unset completo`);
+      console.log(`${repoName} Config completa`);
       resolve();
     } catch (error) {
       reject(error);
