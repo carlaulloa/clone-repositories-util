@@ -3,12 +3,14 @@ const fs = require('fs');
 const path = require('path');
 const child_process = require('child_process');
 
-let source = "C:\\Users\\carla\\Downloads\\RepositoryLinks.xlsx";
+let source = "D:\\Downloads\\Migración.xlsx";
 let localWorkspace = "D:\\principal-workspace";
 let displayName = "Carla Contreras Ulloa";
 let email = "ccontrerasu@odybank.com.pe";
 
-let sheetIndex = 0;
+  let baseUrlToReplace = "https://gitlab.odybank.com.pe:8443/";
+
+let sheetIndex = 1;
 let workbook = XLSX.readFile(source);
 let sheetNames = workbook.SheetNames;
 let sheetName = sheetNames[sheetIndex];
@@ -29,6 +31,12 @@ let setEmail = (email) => {
 
 let getCloneCommand = (url, repoName) => {
   return `git clone ${url} ${repoName}`;
+}
+
+let execSyncCommand = (command) => {
+  if(command !== null && command !== undefined){
+    child_process.execSync(command.trim(), { stdio: 'inherit' });
+  }
 }
 
 let execClone = (url, repoName, dir) => {
@@ -52,28 +60,35 @@ let execClone = (url, repoName, dir) => {
 setGlobalTooLongPath();
 
 data.forEach(item => {
-  const urlColumn = 'Repositorio Gitlab empresarial';
+  const urlColumn = 'URL';
+  const setUrlCommandColumn = 'Comando URL';
   let url = item[urlColumn].trim();
-  let baseUrlToReplace = "http://gitlab.odybank.com.pe/";
   let dir = url.replace(baseUrlToReplace, "");
   let parts = dir.split('/');
   let repoName = parts[parts.length - 1];
   parts = parts.filter(p => p.indexOf('.git') == -1);
   let newPath = parts.join('/');
   dir = path.join(localWorkspace, newPath);
-  console.log(dir);
+  repoName = repoName.replace('.git', '');
+  console.log('\n', dir);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
     console.log(`${dir} creado.`)
   } else {
-    console.warn(`${dir} existe.`)
+    console.warn(`${dir} existe.`);
+    let fullPathRepo = path.join(dir, repoName); 
+    console.log(fullPathRepo);
+    if(fs.existsSync(fullPathRepo)){
+      console.log('Repositorio existe.')
+      process.chdir(fullPathRepo);
+      execSyncCommand(item[setUrlCommandColumn]);
+      console.log(`Remote Url ${repoName} establecida.`);
+    }
   }
-  repoName = repoName.replace('.git', '');
   execClone(url, repoName, dir)
     .then(res => {
       console.log(`${repoName} Completo`);
     })
-    .catch(e => console.log(e))
-
+    .catch(e => console.log(e));
 });
 
