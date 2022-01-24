@@ -1,68 +1,40 @@
 const XLSX = require('xlsx');
 const fs = require('fs');
 const path = require('path');
-const child_process = require('child_process');
+const utils = require('./utils');
 
-let source = "D:\\Downloads\\Migración.xlsx";
-let localWorkspace = "D:\\principal-workspace";
+let source = "D:\\Downloads\\repositories.txt";
+let localWorkspace = "D:\\principal-workspace\\culqi\\repositories";
 let displayName = "Carla Contreras Ulloa";
-let email = "ccontrerasu@odybank.com.pe";
+let email = "carla.contreras@culqi.com";
 
-  let baseUrlToReplace = "https://gitlab.odybank.com.pe:8443/";
+//let baseUrlToReplace = "https://gitlab.odybank.com.pe:8443/";
+let baseUrlToReplace = "https://gitlab.com/";
 
-let sheetIndex = 1;
-let workbook = XLSX.readFile(source);
-let sheetNames = workbook.SheetNames;
-let sheetName = sheetNames[sheetIndex];
-let sheet = workbook.Sheets[sheetName];
-var data = XLSX.utils.sheet_to_json(sheet);
+let sheetIndex = 2;
 
-let setGlobalTooLongPath = () => {
-  child_process.execSync('git config --global core.longpaths true', { stdio: 'inherit' });
-}
+let sourceExtension = utils.getExtension(source);
+let data = [];
 
-let setUsername = (displayName) => {
-  return `git config user.name "${displayName}"`;
-}
-
-let setEmail = (email) => {
-  return `git config user.email "${email}"`;
-}
-
-let getCloneCommand = (url, repoName) => {
-  return `git clone ${url} ${repoName}`;
-}
-
-let execSyncCommand = (command) => {
-  if(command !== null && command !== undefined){
-    child_process.execSync(command.trim(), { stdio: 'inherit' });
+switch(sourceExtension){
+  case 'xlsx': {
+    let workbook = XLSX.readFile(source);
+    let sheetNames = workbook.SheetNames;
+    let sheetName = sheetNames[sheetIndex];
+    let sheet = workbook.Sheets[sheetName];
+    let dataXLSX = XLSX.utils.sheet_to_json(sheet);
+    data = dataXLSX.map(item => item['URL']);
+  }
+  case 'txt':
+  default: {
+    data = fs.readFileSync(source, { encoding: 'utf-8' }).split(/\r?\n/);
   }
 }
 
-let execClone = (url, repoName, dir) => {
-  return new Promise((resolve, reject) => {
-    process.chdir(dir);
-    let coomand = getCloneCommand(url, repoName);
-    try {
-      child_process.execSync(coomand, { stdio: 'inherit' });
-      let full = path.join(dir, repoName);
-      process.chdir(full);
-      child_process.execSync(setUsername(displayName), { stdio: 'inherit' });
-      child_process.execSync(setEmail(email), { stdio: 'inherit' });
-      console.log(`${repoName} Config completa`);
-      resolve();
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
-
-setGlobalTooLongPath();
+utils.setGlobalTooLongPath();
 
 data.forEach(item => {
-  const urlColumn = 'URL';
-  const setUrlCommandColumn = 'Comando URL';
-  let url = item[urlColumn].trim();
+  let url = item.trim();
   let dir = url.replace(baseUrlToReplace, "");
   let parts = dir.split('/');
   let repoName = parts[parts.length - 1];
@@ -81,11 +53,11 @@ data.forEach(item => {
     if(fs.existsSync(fullPathRepo)){
       console.log('Repositorio existe.')
       process.chdir(fullPathRepo);
-      execSyncCommand(item[setUrlCommandColumn]);
+      utils.execSyncCommand(getSetUrlOriginCommand(url));
       console.log(`Remote Url ${repoName} establecida.`);
     }
   }
-  execClone(url, repoName, dir)
+  utils.execClone(url, repoName, dir)
     .then(res => {
       console.log(`${repoName} Completo`);
     })
