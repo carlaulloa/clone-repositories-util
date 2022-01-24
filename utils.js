@@ -31,7 +31,7 @@ let execSyncCommand = (command) => {
   }
 }
 
-let execClone = (url, repoName, dir) => {
+let execClone = (url, repoName, dir, displayName, email) => {
   return new Promise((resolve, reject) => {
     process.chdir(dir);
     let coomand = getCloneCommand(url, repoName);

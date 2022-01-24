@@ -57,7 +57,7 @@ data.forEach(item => {
       console.log(`Remote Url ${repoName} establecida.`);
     }
   }
-  utils.execClone(url, repoName, dir)
+  utils.execClone(url, repoName, dir, displayName, email)
     .then(res => {
       console.log(`${repoName} Completo`);
     })
