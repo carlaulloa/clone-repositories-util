@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const utils = require('./utils');
 
-let source = "D:\\Downloads\\repositories.txt";
-let localWorkspace = "D:\\principal-workspace\\culqi\\repositories";
+let source = "/home/ccontreras/Downloads/repositories.txt";
+let localWorkspace = "/home/ccontreras/repositories";
 let displayName = "Carla Contreras Ulloa";
 let email = "carla.contreras@culqi.com";
 
@@ -28,6 +28,9 @@ switch(sourceExtension){
   case 'txt':
   default: {
     data = fs.readFileSync(source, { encoding: 'utf-8' }).split(/\r?\n/);
+    data = data
+      .filter(line => line.trim() !== '')
+      .filter(line => !line.startsWith('#'));
   }
 }
 
