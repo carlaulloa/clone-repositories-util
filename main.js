@@ -1,17 +1,15 @@
+require('dotenv').config();
 const XLSX = require('xlsx');
 const fs = require('fs');
 const path = require('path');
 const utils = require('./utils');
 
-let source = "/home/ccontreras/Downloads/repositories.txt";
-let localWorkspace = "/home/ccontreras/repositories";
-let displayName = "Carla Contreras Ulloa";
-let email = "carla.contreras@culqi.com";
-
-//let baseUrlToReplace = "https://gitlab.odybank.com.pe:8443/";
-let baseUrlToReplace = "https://gitlab.com/";
-
-let sheetIndex = 2;
+let source = process.env.REPOSITORIES_FILE_PATH;
+let localWorkspace = process.env.WORKSPACE_PATH;
+let displayName = process.env.DISPLAY_NAME;
+let email = process.env.EMAIL;
+let baseUrlToReplace = process.env.BASE_URL_TO_REPLACE;
+let sheetIndex = process.env.SHEET_INDEX;
 
 let sourceExtension = utils.getExtension(source);
 let data = [];
@@ -64,6 +62,6 @@ data.forEach(item => {
     .then(res => {
       console.log(`${repoName} Completo`);
     })
-    .catch(e => console.log(e));
+    .catch(e => console.log(e)); 
 });
 
